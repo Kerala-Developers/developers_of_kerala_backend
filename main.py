@@ -1,20 +1,21 @@
 from re import S
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import FastAPI, Form, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from pymongo.errors import DuplicateKeyError ,ServerSelectionTimeoutError
+from pymongo.errors import DuplicateKeyError, ServerSelectionTimeoutError
 from passlib.context import CryptContext
 
 from datetime import datetime, timedelta
 from bson import ObjectId
-from typing import List , Optional
+from typing import List, Optional
 from dotenv import load_dotenv
 import os
 import json
 
 from database import db
-from models import Developer , User # Import your ODMantic models
+from models import  UserRegistration, UserProfileUpdate, DeveloperProfileUpdate, CompanyProfileUpdate, UserReference
 from authentication import create_access_token, verify_token
+
 # Load environment variables from .env file
 load_dotenv()
 # FastAPI intialization
@@ -34,23 +35,14 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 async def read_root():
     return "<h1>Hello Kerala Developers!</h1>"
 
-
-# example endpoint for mongo db interaction
-@app.post("/insert_tree/")
-async def insert_tree(tree_data: str):
+@app.get("/check_db")
+async def check_db_connection():
     try:
-        # Insert tree data into the collection
-        tree_dict = {"tree_data": tree_data}
-        result = db.test_tree.insert_one(tree_dict)
-        if result.inserted_id:
-            return {
-                "message": "Tree inserted successfully",
-                "tree_id": str(result.inserted_id),
-            }
-        else:
-            raise HTTPException(status_code=500, detail="Failed to insert tree")
-    except DuplicateKeyError:
-        raise HTTPException(status_code=400, detail="Tree with same ID already exists")
+        # The ismaster command is cheap and does not require auth.
+        db.command("ismaster")
+        return {"status": "Database is connected"}
+    except ServerSelectionTimeoutError as e:
+        return {"status": "Database connection failed", "exception": str(e)}
 
 
 @app.post("/submit_email/")
@@ -67,8 +59,6 @@ async def submit_email(email: str = Form(...)):
             raise HTTPException(status_code=500, detail="Failed to insert")
     except Exception as e:
         return {"exception": str(e)}
-
-
 
 
 @app.post("/create_developer/")
@@ -116,41 +106,43 @@ async def list_developers():
     return developers_list
 
 
-# except Exception as e:
-#     raise HTTPException(status_code=500, detail=f"Failed to fetch developers")
 
-
-@app.get("/check_db")
-async def check_db_connection():
-    try:
-        # The ismaster command is cheap and does not require auth.
-        db.command("ismaster")
-        
-        return {"status": "Database is connected"}
-    except ServerSelectionTimeoutError as e:
-        return {"status": "Database connection failed", "exception": str(e)}
 
 # Endppoint for user registration
 @app.post("/register")
 async def register_user(
-    username: str = Form(...), 
-    email: str = Form(...), 
-    hashed_password: str = Form(...)
+    username: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    role: str = Form(...),
 ):
-    user_dict = {"username": username, "email": email, "hashed_password": hashed_password}
-    user_dict["hashed_password"] = pwd_context.hash(user_dict["hashed_password"])
-    result = db.users.insert_one(user_dict)
+    user_dict = {
+        "username": username,
+        "email": email,
+        "password": password,
+        "role": role,
+    }
+    user_dict["password"] = pwd_context.hash(user_dict["password"])
+    result = db.UserRegistration.insert_one(user_dict)
     if result.acknowledged:
-        return {"message": "User registered successfully", "user_id": str(result.inserted_id)}
+        return {
+            "message": "User registered successfully",
+            "user_id": str(result.inserted_id),
+        }
     else:
         raise HTTPException(status_code=500, detail="Failed to register user")
-    
+
+
 # Endpoint for user login
 @app.post("/login")
-async def generate_token(username: str = Form(...), password: str = Form(...)):
-    user =  db.users.find_one({"username": username})
-    if user and pwd_context.verify(password, user["hashed_password"]):
-        token_data = {"sub": str(user["_id"]), "username": user["username"]}
+async def generate_token(username_or_email: str = Form(...), password: str = Form(...)):
+    user = db.UserRegistration.find_one({"$or": [{"username": username_or_email}, {"email": username_or_email}]})
+    if user and pwd_context.verify(password, user["password"]):
+        token_data = {
+            "sub": str(user["_id"]),
+            "username": user["username"],
+            "role": user.get("role", ""),
+        }
         token = create_access_token(token_data)
-        return {"access_token": token, "token_type": "bearer"}
+        return {"access_token": token, "token_type": "bearer","role":user.get("role", ""),"username":user["username"]}
     raise HTTPException(status_code=401, detail="Invalid credentials")
