@@ -10,6 +10,7 @@ idna==3.6
 motor==3.3.2
 odmantic==1.0.0
 passlib==1.7.4
+pre-commit==3.6.0
 pydantic==2.5.3
 pydantic_core==2.14.6
 pymongo==4.6.1

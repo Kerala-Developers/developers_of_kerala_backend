@@ -1,0 +1,33 @@
+name: Pre-commit Checks
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  pre-commit-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install pre-commit
+      run: |
+        python -m pip install --upgrade pip
+        pip install pre-commit
+
+    - name: Run pre-commit checks
+      run: |
+        pre-commit run --all-files --all
+    - name: Check Pre-commit Status
+      run: |
+        if [ $? -ne 0 ]; then
+          echo "Pre-commit checks failed. Aborting workflow."
+          exit 1
+        fi

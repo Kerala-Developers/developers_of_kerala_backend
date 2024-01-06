@@ -2,20 +2,22 @@ from pydantic import BaseModel, EmailStr
 from typing import List
 from enum import Enum
 
+
 class UserRole(str, Enum):
     admin = "admin"
     developer = "developer"
     company = "company"
+
 
 # Common fields for both developers and companies
 class UserRegistration(BaseModel):
     username: str
     email: EmailStr
     password: str
-    role: UserRole = UserRole.developer 
+    role: UserRole = UserRole.developer
     full_name: str
     profile_pic: str  # s3 address for profile picture
-    contact: str# default role is developer
+    contact: str  # default role is developer
 
 
 # Developer-specific fields
@@ -29,26 +31,26 @@ class DeveloperProfileUpdate(UserRegistration):
     certifications: List[str]
     achievements: str
     projects: List[str]
-    socials: dict  # e.g., {"LinkedIn": "<link>", "GitHub": "<link>", "Twitter": "<link>"}
- 
+    socials: dict  # e.g., {"LinkedIn": "<link>", etc}
+
+
 class Opening(BaseModel):
     skills_needed: List[str]
     qualification_required: str
     job_role: str
-    job_description: str   
-    
+    job_description: str
+
+
 # Company-specific fields
 class CompanyProfileUpdate(UserRegistration):
     industry: str
     detail_intro: str
     location: str
     openings: List[Opening] = []
-    socials: dict  # e.g., {"LinkedIn": "<link>", "GitHub": "<link>", "Twitter": "<link>"}
-    
+    socials: dict  # e.g., {"LinkedIn": "<link>", etc}
+
 
 class UserReference(BaseModel):
     user_info: UserRegistration
     developer_info: DeveloperProfileUpdate = None
     company_info: CompanyProfileUpdate = None
-
-
