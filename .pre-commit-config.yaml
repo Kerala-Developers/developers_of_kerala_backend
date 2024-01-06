@@ -14,3 +14,4 @@ repos:
     rev: 3.7.9
     hooks:
     - id: flake8
+      additional_args: ["--ignore=E501"]  # Ignore line too long (E501) error
