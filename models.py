@@ -37,7 +37,7 @@ class DeveloperProfileUpdate(UserRegistration):
 class OpeningStatus(str, Enum):
     active = "active"
     closed = "closed"
-    paused ="paused"
+    paused = "paused"
 
 
 class Opening(BaseModel):
