@@ -34,15 +34,23 @@ class DeveloperProfileUpdate(UserRegistration):
     socials: dict  # e.g., {"LinkedIn": "<link>", etc}
 
 
+class OpeningStatus(str, Enum):
+    active: "active"
+    closed: "closed"
+    paused: "paused"
+
+
 class Opening(BaseModel):
     skills_needed: List[str]
     qualification_required: str
     job_role: str
     job_description: str
+    status: OpeningStatus.active
 
 
 # Company-specific fields
 class CompanyProfileUpdate(UserRegistration):
+    name: str
     industry: str
     detail_intro: str
     location: str
