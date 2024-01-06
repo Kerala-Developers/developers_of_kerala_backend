@@ -61,11 +61,7 @@ async def submit_email(email: str = Form(...)):
 
 @app.post("/create_developer/")
 async def create_developer(
-    name: str,
-    place: str,
-    skills: str,
-    email: str,
-    resume: Optional[str] = None
+    name: str, place: str, skills: str, email: str, resume: Optional[str] = None
 ):
     try:
         # Create a dictionary for developer data
@@ -86,8 +82,7 @@ async def create_developer(
                 "developer_id": str(result.inserted_id),
             }
         else:
-            raise HTTPException(status_code=500,
-                                detail="Failed to create developer")
+            raise HTTPException(status_code=500, detail="Failed to create developer")
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to create developer: {str(e)}"
@@ -137,11 +132,9 @@ async def register_user(
 
 # Endpoint for user login
 @app.post("/login")
-async def generate_token(username_or_email: str = Form(...),
-                         password: str = Form(...)):
+async def generate_token(username_or_email: str = Form(...), password: str = Form(...)):
     user = db.UserRegistration.find_one(
-        {"$or": [{"username": username_or_email},
-                 {"email": username_or_email}]}
+        {"$or": [{"username": username_or_email}, {"email": username_or_email}]}
     )
     if user and pwd_context.verify(password, user["password"]):
         token_data = {
