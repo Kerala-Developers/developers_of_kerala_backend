@@ -33,11 +33,23 @@ This backend repository serves as the core of our open-source job/freelance plat
    - Activate the virtual environment (`source env/bin/activate` for Unix/Linux, `env\Scripts\activate` for Windows).
 4. **Install Requirements**: Run `pip install -r requirements.txt` to install necessary dependencies.
 5. **Install Pre-commit Hooks**: Run `pre-commit install` to set up the git hook scripts.
-6. **Set Up Environment Variables**:
+
+6. **Install `black` for Code Formatting**:
+   - If not already installed, install `black` using `sudo apt`:
+     ```bash
+     sudo apt update
+     sudo apt install black
+     ```
+7. **Format Code using `black`**:
+   - Run `black .` to format code before committing and pushing. This ensures consistent code style.
+
+8. **Set Up Environment Variables**:
    - Create a `.env` file in the root directory.
-   - Add required secrets and configurations to the `.env` file, .env content secrets are available on Notion for team members.
-7. Make your **contributions** or enhancements to API endpoints, data models, security measures, or performance optimizations.
-8. Create a **Pull Request**.
+   - Add required secrets and configurations to the `.env` file, with details available on Notion for team members.
+
+9. Make your **contributions** or enhancements to API endpoints, data models, security measures, or performance optimizations.
+10. Create a **Pull Request**.
+
 
 We encourage contributions of all kinds, whether it's building the backend, bug fixes, new API endpoints, database optimizations, or documentation improvements. Join us in building a robust backend for supporting the Kerala Python community!
 
